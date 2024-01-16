@@ -4,6 +4,9 @@ import org.swdc.unitremark.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Main {
 
@@ -23,6 +26,10 @@ public class Main {
         //UnitDocument<String> cleanHtml = cleanHtmlGenerator.generateFromURL("https://www.w3school.com.cn/tags/tag_table.asp");
         System.err.println(cleanHtml.getSource());
         cleanHtmlGenerator.saveDocument(cleanHtml,new File("test.zhtm"));
+
+        UnitTextDocumentGenerator embeddedGenerator  = new UnitTextDocumentGenerator(new UnitEmbeddedHtmlStrategies());
+        UnitDocument<String> document = embeddedGenerator.generateFromURL("https://blog.csdn.net/u013642500/article/details/102655124?spm=1001.2101.3001.6650.17&depth_1-utm_relevant_index=22");
+        Files.write(Path.of("./embedded.html"),document.getSource().getBytes(StandardCharsets.UTF_8));
     }
 
 
