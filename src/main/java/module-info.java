@@ -5,6 +5,7 @@ module swdc.unit.remark {
     requires org.jsoup;
 
     exports org.swdc.unitremark;
+    exports org.swdc.unitremark.strategies;
 
     provides java.nio.charset.spi.CharsetProvider
             with org.swdc.unitremark.ChineseCharsetProvider;

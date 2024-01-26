@@ -24,7 +24,7 @@ public class UnitDocument<T> {
         this.title = title;
     }
 
-    String traceImageResource(String url) {
+    public String traceImageResource(String url) {
         String resourceId = UUID.randomUUID().toString();
         try {
             URL theURL = new URL(url);

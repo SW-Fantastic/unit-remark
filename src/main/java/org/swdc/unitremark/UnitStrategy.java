@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UnitStrategy {
 
-    Class strategyFor();
-
     String[] matches();
 
 }

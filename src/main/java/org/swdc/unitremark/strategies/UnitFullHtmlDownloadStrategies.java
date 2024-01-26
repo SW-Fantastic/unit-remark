@@ -1,8 +1,8 @@
-package org.swdc.unitremark;
+package org.swdc.unitremark.strategies;
 
 import org.jsoup.nodes.*;
+import org.swdc.unitremark.*;
 
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -28,13 +28,15 @@ public class UnitFullHtmlDownloadStrategies extends UnitAbstractStrategies<Strin
             } else if (element instanceof TextNode){
                 TextNode node = (TextNode) element;
                 sb.append(node.text());
+            } else if (element instanceof DataNode) {
+                return element.attr(element.nodeName());
             }
         }
         return sb.toString();
     }
 
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "meta"
     })
     public String meta(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -56,7 +58,7 @@ public class UnitFullHtmlDownloadStrategies extends UnitAbstractStrategies<Strin
         return e.toString();
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "link"
     })
     public String link(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -70,7 +72,14 @@ public class UnitFullHtmlDownloadStrategies extends UnitAbstractStrategies<Strin
         return "";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
+            "script"
+    })
+    public String script(UnitContext<String> ctx, Element e, UnitDocument document) {
+        return "";
+    }
+
+    @UnitStrategy( matches = {
             "img"
     })
     public String img(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -88,15 +97,15 @@ public class UnitFullHtmlDownloadStrategies extends UnitAbstractStrategies<Strin
         if (src.isBlank()) {
             return "";
         }
-        String attrs = "";
-        if (e.hasAttr("class")) {
-            attrs = attrs + " class=\"" + e.attr("class") + "\"";
-        }
-        if (e.hasAttr("style")) {
-            attrs = attrs + " style=\"" + e.attr("style") + "\"";
-        }
-        if (e.hasAttr("id")) {
-            attrs = attrs + " id=\"" + e.attr("id") + "\"";
+        String attrs = " ";
+
+        for (Attribute attr :e.attributes()) {
+            String key = attr.getKey().toLowerCase();
+            if (key.equals("class") || key.equals("style") || key.equals("id")) {
+                attrs = attrs + key + " =\"" + attr.getValue() + "\" ";
+            } else if (key.startsWith("data-")) {
+                attrs = attrs + key + "=\"" + attr.getValue() + "\" ";
+            }
         }
         if (document == null) {
             return "<img src=\"" + src + "\" " + attrs + " />";
@@ -114,7 +123,31 @@ public class UnitFullHtmlDownloadStrategies extends UnitAbstractStrategies<Strin
         }
     }
 
-    @UnitStrategy(strategyFor = UnitCleanHtmlStrategies.class, matches = {
+    @UnitStrategy(matches = {
+            "style"
+    })
+    public String style(UnitContext<String> ctx, Element e, UnitDocument document) {
+
+        String content = reverseGenerate(ctx,e.childNodes(),document);
+        String attrs = " ";
+
+        for (Attribute attr :e.attributes()) {
+            String key = attr.getKey().toLowerCase();
+            if (key.equals("class") || key.equals("style") || key.equals("id")) {
+                attrs = attrs + key + " =\"" + attr.getValue() + "\" ";
+            } else if (key.startsWith("data-")) {
+                attrs = attrs + key + "=\"" + attr.getValue() + "\" ";
+            }
+        }
+
+        if (content.isBlank()) {
+            return "";
+        }
+
+        return "<style " + attrs + " >" + content + "</style>";
+    }
+
+    @UnitStrategy(matches = {
             "body","html","head","div","p"
     })
     public String div(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -125,15 +158,16 @@ public class UnitFullHtmlDownloadStrategies extends UnitAbstractStrategies<Strin
         if (e instanceof Document) {
             return rst;
         }
-        String attrs = "";
-        if (e.hasAttr("class")) {
-            attrs = attrs + " class=\"" + e.attr("class") + "\"";
-        }
-        if (e.hasAttr("style")) {
-            attrs = attrs + " style=\"" + e.attr("style") + "\"";
-        }
-        if (e.hasAttr("id")) {
-            attrs = attrs + " id=\"" + e.attr("id") + "\"";
+
+        String attrs = " ";
+
+        for (Attribute attr :e.attributes()) {
+            String key = attr.getKey().toLowerCase();
+            if (key.equals("class") || key.equals("style") || key.equals("id")) {
+                attrs = attrs + key + " =\"" + attr.getValue() + "\" ";
+            } else if (key.startsWith("data-")) {
+                attrs = attrs + key + "=\"" + attr.getValue() + "\" ";
+            }
         }
         return "<" + e.tagName() + attrs + ">" + rst + "</" + e.tagName() + ">";
     }

@@ -1,16 +1,18 @@
-package org.swdc.unitremark;
+package org.swdc.unitremark.strategies;
 
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
+import org.swdc.unitremark.*;
 
-import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 public class UnitEmbeddedHtmlStrategies extends UnitFullHtmlDownloadStrategies {
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "img"
     })
     public String img(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -28,15 +30,15 @@ public class UnitEmbeddedHtmlStrategies extends UnitFullHtmlDownloadStrategies {
         if (src.isBlank()) {
             return "";
         }
-        String attrs = "";
-        if (e.hasAttr("class")) {
-            attrs = attrs + " class=\"" + e.attr("class") + "\"";
-        }
-        if (e.hasAttr("style")) {
-            attrs = attrs + " style=\"" + e.attr("style") + "\"";
-        }
-        if (e.hasAttr("id")) {
-            attrs = attrs + " id=\"" + e.attr("id") + "\"";
+        String attrs = " ";
+
+        for (Attribute attr :e.attributes()) {
+            String key = attr.getKey().toLowerCase();
+            if (key.equals("class") || key.equals("style") || key.equals("id") || key.equals("width") || key.equals("height")) {
+                attrs = attrs + key + " =\"" + attr.getValue() + "\" ";
+            } else if (key.startsWith("data-")) {
+                attrs = attrs + key + "=\"" + attr.getValue() + "\" ";
+            }
         }
         if (document == null) {
             return "<img src=\"" + src + "\" " + attrs + " />";

@@ -1,10 +1,11 @@
-package org.swdc.unitremark;
+package org.swdc.unitremark.strategies;
 
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import org.swdc.unitremark.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,20 +28,22 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
                 sb.append(text);
             } else if (element instanceof TextNode){
                 TextNode node = (TextNode) element;
-                sb.append(node.text());
+                sb.append(node.text()
+                        .replace("<","&lt;")
+                        .replace(">","&gt;"));
             }
         }
         return sb.toString();
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "script","meta","link","style"
     })
     public String metadata(UnitContext<String> ctx, Element e, UnitDocument tracer) {
         return "";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "h1","h2","h3","h4","h5","h6"
     })
     public String header(UnitContext<String> ctx, Element e, UnitDocument tracer) {
@@ -55,7 +58,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         }
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "img"
     })
     public String img(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -84,7 +87,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         }
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "pre"
     })
     public String preformat(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -94,7 +97,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return  "\r\n``` \r\n" + e.text() + "\r\n```\r\n\r\n";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "blockquote"
     })
     public String blockquote(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -102,17 +105,17 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         if (text.isBlank()) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("\r\n");
         String[] lines =  text.split("\r\n");
         for (String line : lines) {
             if (!line.isBlank()) {
-                sb.append(" > ").append(line).append("\r\n");
+                sb.append("> ").append(line).append("\r\n");
             }
         }
         return sb.append("\r\n").toString();
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "q","kbd"
     })
     String quote(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -124,7 +127,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return "`" + text + "`";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "ul","ol","dl"
     })
     public String list(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -155,7 +158,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return "\r\n\r\n" + text + "\r\n\r\n";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "table"
     })
     public String table(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -185,7 +188,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
                     tableBuilder.append("|");
                 }
                 Element element = cells.get(idx);
-                String content = element.text();
+                String content = reverseGenerate(ctx,element.childNodes(),document);
                 if (content.isBlank()) {
                     content = "  ";
                 }
@@ -207,7 +210,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return "\r\n\r\n" + tableBuilder + "\r\n\r\n";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "div","body","html"
     })
     public String div(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -218,7 +221,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return rst;
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "b","strong"
     })
     public String b(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -229,7 +232,7 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return "**" + content + "**";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "p","span"
     })
     public String p(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -240,11 +243,11 @@ public class UnitMarkdownStrategies extends UnitAbstractStrategies<String> {
         return "\r\n" + content + "\r\n";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy(matches = {
             "a"
     })
     public String a(UnitContext<String> ctx, Element e, UnitDocument document) {
-        String content = reverseGenerate(ctx,e.childNodes(),document).trim();
+        String content = e.text();
         if (content.isBlank()) {
             return "";
         } else {

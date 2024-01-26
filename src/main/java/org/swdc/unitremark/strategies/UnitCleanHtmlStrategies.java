@@ -1,6 +1,7 @@
-package org.swdc.unitremark;
+package org.swdc.unitremark.strategies;
 
 import org.jsoup.nodes.*;
+import org.swdc.unitremark.*;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class UnitCleanHtmlStrategies extends UnitAbstractStrategies<String> {
         return sb.toString();
     }
 
-    @UnitStrategy(strategyFor = UnitCleanHtmlStrategies.class, matches = {
+    @UnitStrategy(matches = {
             "div","body","html","head"
     })
     public String div(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -43,7 +44,7 @@ public class UnitCleanHtmlStrategies extends UnitAbstractStrategies<String> {
     }
 
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "img"
     })
     public String img(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -72,7 +73,7 @@ public class UnitCleanHtmlStrategies extends UnitAbstractStrategies<String> {
         }
     }
 
-    @UnitStrategy(strategyFor = UnitCleanHtmlStrategies.class, matches = {
+    @UnitStrategy( matches = {
             "a"
     })
     public String a(UnitContext<String> ctx, Element e, UnitDocument document) {
@@ -85,7 +86,7 @@ public class UnitCleanHtmlStrategies extends UnitAbstractStrategies<String> {
         return "<a href=\"#\">" + text + "</a>";
     }
 
-    @UnitStrategy(strategyFor = UnitTextDocumentGenerator.class, matches = {
+    @UnitStrategy( matches = {
             "h1","h2","h3","h4","h5","h6"
     })
     public String header(UnitContext<String> ctx, Element e, UnitDocument tracer) {
@@ -94,7 +95,7 @@ public class UnitCleanHtmlStrategies extends UnitAbstractStrategies<String> {
     }
 
 
-    @UnitStrategy(strategyFor = UnitCleanHtmlStrategies.class,matches = {
+    @UnitStrategy(matches = {
             "button","select","input","checkbox"
     })
     public String inputs(UnitContext<String> ctx, Element e, UnitDocument document) {

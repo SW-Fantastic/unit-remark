@@ -68,7 +68,14 @@ public class UnitTextDocumentGenerator implements UnitContext<String> {
         }
     }
 
-
+    public UnitDocument<String> generateFromSource(String url, String source) {
+        Document doc = Jsoup.parse(source,url);
+        UnitDocument<String> result = new UnitDocument<>();
+        result.setTitle(doc.title());
+        String data = generate(result, doc.tagName("html"));
+        result.setSource(data);
+        return result;
+    }
 
     public void saveDocument(UnitDocument<String> document, File file) {
         if (file.exists()) {
